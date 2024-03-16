@@ -1,0 +1,40 @@
+# Build output
+build/
+*.o
+*.a
+*.so
+*.dll
+*.lib
+
+# IDE specific files
+# Compile output from various IDEs
+*.suo
+*.sln
+*.xcodeproj
+
+# Dependency manager files
+# Lock files
+package-lock.json
+node_modules/
+
+# Test coverage reports
+coverage.txt
+
+# CMake cache
+CMakeCache.txt
+CMakeFiles/
+
+# Visual Studio specific
+# Visual Studio intermediate files
+*.vcxproj.user
+Visual Studio 20*/[Bb]in/
+[Bb]in/
+
+# Temporary files
+tmp/
+
+# Executable file (if not built from source)
+aes_rc4
+
+# Logs
+*.log
