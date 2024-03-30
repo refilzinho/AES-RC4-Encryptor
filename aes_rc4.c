@@ -3,6 +3,7 @@
 #include<string.h>
 
 #include "common.h"
+#include "aes.h"
 
 void genRandomBytes(unsigned char key[], size_t keySize){
 	for(int i=0;i<keySize;i++){
@@ -25,6 +26,24 @@ void printHex(unsigned char* varName, unsigned char data[], size_t dataSize){
     printf("\n};\n\n");
 }
 
+int padding(unsigned char shellcode[], size_t shellcodeSize, unsigned char **newBuffer, size_t *newBufferSize, int paddingInt){
+	size_t paddingSize;
+
+	paddingSize = shellcodeSize + paddingInt - (shellcodeSize % paddingInt);
+	*newBuffer = (unsigned char *)malloc(sizeof(unsigned char)*paddingSize);
+
+	if(*newBuffer == NULL){
+		printf("[+] error malloc\n");
+		return 1;
+	}
+
+	memset(*newBuffer, 0, paddingSize);
+	memcpy(*newBuffer, shellcode, shellcodeSize);
+
+	*newBufferSize = paddingSize;
+
+	return 0;
+}
 
 void menu(){
     printf("usage: ./aes_rc4.c option\n");
@@ -79,7 +98,33 @@ int main(int argc, char *argv[]){
     }
 
     if(strcmp(argv[1], "aes") == 0){
-        printf("execucao aes algo\n");
+
+        unsigned char *bufferShellcode = shellcode;
+	    size_t bufferSize = sizeof(shellcode);
+        
+        unsigned char aesKey[AESKEYSIZE];
+		unsigned char aesIV[AESIVSIZE];
+		unsigned char *output = NULL;
+
+		struct AES_ctx ctx;
+
+		srand(time(NULL));
+		genRandomBytes(aesKey, AESKEYSIZE);
+
+		srand(time(NULL)^aesKey[0]);
+		genRandomBytes(aesIV, AESIVSIZE);
+
+		printHex("aesKey", aesKey, AESKEYSIZE);
+		printHex("aesIV", aesIV, AESIVSIZE);
+
+		AES_init_ctx_iv(&ctx, aesKey, aesIV);
+		if (bufferSize %16 != 0){
+			printf("[+] payload needs to be padded\n");
+			padding(shellcode, sizeof(shellcode), &bufferShellcode, &bufferSize, 16);
+		}
+		AES_CBC_encrypt_buffer(&ctx, bufferShellcode, bufferSize);
+		printHex("shellcodeAES", bufferShellcode, bufferSize);
+
     }
 
     else if(strcmp(argv[1], "rc4") == 0){
